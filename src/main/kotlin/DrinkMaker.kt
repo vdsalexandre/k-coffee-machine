@@ -38,9 +38,10 @@ class DrinkMaker(private var orders: MutableList<Order> = mutableListOf()) {
 
     fun getTotalAmount(): BigDecimal = orders.map { DrinkType.getRoundedPriceByCode(it.code) }.sumOf { it }
 
-
     fun showOrderHistory() {
-        orders.forEachIndexed { index, order -> println("Order_${index + 1}# ${DrinkType.valueOf(order.code).getClassicName()} - ${DrinkType.valueOf(order.code).getRoundedPrice()} €") }
+        orders.forEachIndexed { index, order ->
+            println("Order_${index + 1}# ${DrinkType.getDrinkTypeByCode(order.code).getClassicName()} - ${DrinkType.getRoundedPriceByCode(order.code)} €")
+        }
         println("-----------------------------------")
         println("Total amount: ${getTotalAmount()} €")
     }

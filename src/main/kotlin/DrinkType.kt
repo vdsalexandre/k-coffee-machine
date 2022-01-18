@@ -13,6 +13,14 @@ enum class DrinkType(val code: String, val price: BigDecimal) {
     fun getRoundedPrice(): BigDecimal = price.setScale(2, RoundingMode.HALF_UP)
 
     companion object {
-        fun getRoundedPriceByCode(code: String): BigDecimal = values().find { it.code == code.replace("h", "") }?.getRoundedPrice() ?: BigDecimal.ZERO
+        fun getRoundedPriceByCode(code: String): BigDecimal {
+            return values().find { it.code == classicCode(code) }?.getRoundedPrice() ?: BigDecimal.ZERO
+        }
+
+        fun getDrinkTypeByCode(code: String): DrinkType {
+            return values().find { it.code == classicCode(code) } ?: UNKNOWN
+        }
+
+        private fun classicCode(code: String) = code.replace("h", "")
     }
 }

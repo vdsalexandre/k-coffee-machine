@@ -1,11 +1,7 @@
 import java.math.BigDecimal
 
-class Drink(private var code: String, var type: DrinkType = DrinkType.UNKNOWN) {
-
-    constructor(code: String) : this() {
-        this.code = code
-        this.type = DrinkType.valueOf(code.replace("h", ""))
-    }
+class Drink(var code: String) {
+    private var type: DrinkType = DrinkType.getDrinkTypeByCode(code)
 
     fun isADrinkWithoutSugarAndStick() = type == DrinkType.ORANGE_JUICE
 
@@ -16,5 +12,4 @@ class Drink(private var code: String, var type: DrinkType = DrinkType.UNKNOWN) {
     fun getPrice(): BigDecimal = type.getRoundedPrice()
 
     fun formattedName() = type.name.replace("_", " ").lowercase()
-
 }

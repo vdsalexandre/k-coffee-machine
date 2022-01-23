@@ -12,56 +12,42 @@ class DrinkMaker(private var orders: MutableList<Order> = mutableListOf()) {
         return if (order.code == "M") {
             "$DRINK_MAKER_MESSAGE ${order.message}"
         } else {
-            val drink: Drink
-            val aDrink: String
+            val drink = Drink(order.code)
 
-            if (isAnExtraHotDrink(order.code)) {
-                drink = getDrink(getClassicDrinkCode(order.code))
-                aDrink = "an extra hot"
+            val aDrink: String = if (drink.isAnExtraHotDrink()) {
+                "an extra hot"
             } else {
-                drink = getDrink(order.code)
-                aDrink = "one"
+                "one"
             }
 
-            if (hasEnoughMoneyForDrink(drink, order.amount)) {
+            if (drink.hasEnoughMoneyForDrink(order.amount)) {
                 orders.add(order)
                 val howManySugars = getHowManySugars(order.sugar)
                 val stickOrNot = getStickOrNot(order.stick)
 
-                if (isADrinkWithoutSugarAndStick(drink)) {
-                    "$DRINK_MAKER_COMMAND $aDrink ${formattedDrinkName(drink)}"
+                if (drink.isADrinkWithoutSugarAndStick()) {
+                    "$DRINK_MAKER_COMMAND $aDrink ${drink.formattedName()}"
                 } else
-                    "$DRINK_MAKER_COMMAND $aDrink ${formattedDrinkName(drink)} with $howManySugars and $stickOrNot"
+                    "$DRINK_MAKER_COMMAND $aDrink ${drink.formattedName()} with $howManySugars and $stickOrNot"
             } else {
-                val amountMissing: BigDecimal = (drink.price - order.amount).setScale(2, RoundingMode.CEILING)
-                "$DRINK_MAKER_MESSAGE Not enough money for ${formattedDrinkName(drink)} (missing $amountMissing €)"
+                val amountMissing: BigDecimal = (drink.getPrice() - order.amount).setScale(2, RoundingMode.CEILING)
+                "$DRINK_MAKER_MESSAGE Not enough money for ${drink.formattedName()} (missing $amountMissing €)"
             }
         }
     }
 
-    fun getTotalAmount(): BigDecimal = orders.map { getDrinkPrice(it.code) }.sumOf { it }
-
-    private fun getDrinkPrice(code: String) = getDrink(getClassicDrinkCode(code)).price.setScale(2, RoundingMode.HALF_UP)
+    fun getTotalAmount(): BigDecimal = orders.map { DrinkType.getRoundedPriceByCode(it.code) }.sumOf { it }
 
     fun showOrderHistory() {
-        orders.forEachIndexed { index, order -> println("Order_${index + 1}# ${getPrintDrinkName(order.code)} - ${getDrinkPrice(order.code)} €") }
+        orders.forEachIndexed { index, order ->
+            println("Order_${index + 1}# ${DrinkType.getDrinkTypeByCode(order.code).getClassicName()} - ${DrinkType.getRoundedPriceByCode(order.code)} €")
+        }
         println("-----------------------------------")
         println("Total amount: ${getTotalAmount()} €")
     }
 
-    private fun getPrintDrinkName(code: String): String {
-        return if (isAnExtraHotDrink(code))
-            "extra hot ${formattedDrinkName(getDrink(getClassicDrinkCode(code)))}"
-        else
-            formattedDrinkName(getDrink(code))
-    }
-
-    private fun getClassicDrinkCode(code: String) = code.replace("h", "")
-
-    private fun formattedDrinkName(drink: Drink) = drink.name.replace("_", " ").lowercase()
-
-    private fun getHowManySugars(code: Int?): String {
-        return code?.let {
+    private fun getHowManySugars(sugarValue: Int?): String {
+        return sugarValue?.let {
             when (it) {
                 1 -> "one sugar"
                 2 -> "two sugars"
@@ -71,13 +57,5 @@ class DrinkMaker(private var orders: MutableList<Order> = mutableListOf()) {
         } ?: "no sugar"
     }
 
-    private fun isAnExtraHotDrink(code: String) = code.length == 2 && code.endsWith("h")
-
-    private fun isADrinkWithoutSugarAndStick(drink: Drink) = drink == Drink.ORANGE_JUICE
-
-    private fun hasEnoughMoneyForDrink(drink: Drink, amount: BigDecimal) = amount >= drink.price
-
-    private fun getDrink(code: String) = Drink.values().find { it.code == code } ?: Drink.UNKNOWN
-
-    private fun getStickOrNot(code: Int?) = code?.let { "a stick" } ?: "no stick"
+    private fun getStickOrNot(stickValue: Int?) = stickValue?.let { "a stick" } ?: "no stick"
 }

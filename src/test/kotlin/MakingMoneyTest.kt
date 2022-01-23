@@ -27,8 +27,8 @@ class MakingMoneyTest {
 
     @Test
     internal fun `should print order history, containing how many of each drink was sold and the total amount`() {
-
         val drinkMaker = DrinkMaker(orders)
+
         drinkMaker.showOrderHistory()
     }
 }

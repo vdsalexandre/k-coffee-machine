@@ -9,16 +9,11 @@ class DrinkMaker(private var orders: MutableList<Order> = mutableListOf()) {
     }
 
     fun makeDrinkOrForwardMessage(order: Order): String {
-        return if (order.code == "M") {
+        return if (order.isAMessage()) {
             "$DRINK_MAKER_MESSAGE ${order.message}"
         } else {
             val drink = Drink(order.code)
-
-            val aDrink: String = if (drink.isAnExtraHotDrink()) {
-                "an extra hot"
-            } else {
-                "one"
-            }
+            val messageDrink = if (drink.isAnExtraHotDrink()) "an extra hot" else "one"
 
             if (drink.hasEnoughMoneyForDrink(order.amount)) {
                 orders.add(order)
@@ -26,11 +21,11 @@ class DrinkMaker(private var orders: MutableList<Order> = mutableListOf()) {
                 val stickOrNot = getStickOrNot(order.stick)
 
                 if (drink.isADrinkWithoutSugarAndStick()) {
-                    "$DRINK_MAKER_COMMAND $aDrink ${drink.formattedName()}"
+                    "$DRINK_MAKER_COMMAND $messageDrink ${drink.formattedName()}"
                 } else
-                    "$DRINK_MAKER_COMMAND $aDrink ${drink.formattedName()} with $howManySugars and $stickOrNot"
+                    "$DRINK_MAKER_COMMAND $messageDrink ${drink.formattedName()} with $howManySugars and $stickOrNot"
             } else {
-                val amountMissing: BigDecimal = (drink.getPrice() - order.amount).setScale(2, RoundingMode.CEILING)
+                val amountMissing = calculateMissingAmount(drink, order)
                 "$DRINK_MAKER_MESSAGE Not enough money for ${drink.formattedName()} (missing $amountMissing €)"
             }
         }
@@ -46,15 +41,18 @@ class DrinkMaker(private var orders: MutableList<Order> = mutableListOf()) {
         println("Total amount: ${getTotalAmount()} €")
     }
 
+    private fun calculateMissingAmount(drink: Drink, order: Order) =
+        (drink.getPrice() - order.amount).setScale(2, RoundingMode.CEILING)
+
     private fun getHowManySugars(sugarValue: Int?): String {
-        return sugarValue?.let {
+        return sugarValue.let {
             when (it) {
                 1 -> "one sugar"
                 2 -> "two sugars"
                 3 -> "three sugars"
                 else -> "no sugar"
             }
-        } ?: "no sugar"
+        }
     }
 
     private fun getStickOrNot(stickValue: Int?) = stickValue?.let { "a stick" } ?: "no stick"

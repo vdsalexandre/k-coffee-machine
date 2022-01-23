@@ -6,4 +6,6 @@ data class Order(
     val stick: Int? = null,
     val amount: BigDecimal = BigDecimal.ZERO,
     val message: String? = null
-)
+) {
+    fun isAMessage() = code == "M"
+}
